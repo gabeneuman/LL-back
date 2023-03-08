@@ -1,4 +1,4 @@
-import { Document } from "mongoose";
+import { Document, Schema } from "mongoose";
 
 export interface WorkoutI extends Document {
   id?: string;
@@ -8,7 +8,7 @@ export interface WorkoutI extends Document {
   exerciseGroup: ExerciseGroupI[];
   completed: boolean;
   isDeleted: boolean;
-  createdBy: string;
+  createdBy: Schema.Types.ObjectId;
   modifiedBy: string;
   createdAt: string;
   updatedAt: string;

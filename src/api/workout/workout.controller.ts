@@ -21,7 +21,7 @@ export const getWorkouts = async function (req, res) {
     const workouts = await WORKOUT.aggregate([
       {
         $match: {
-          $and: [{ createdBy: userId } , { isDeleted: false }],
+          $and: [{ createdBy: userId }, { isDeleted: false }],
         },
       },
       {
@@ -47,7 +47,11 @@ export const getCompletedWorkouts = async function (req, res) {
     const workouts = await WORKOUT.aggregate([
       {
         $match: {
-          $and: [{ createdBy: userId } , { isDeleted: false }, { completed: true }],
+          $and: [
+            { createdBy: userId },
+            { isDeleted: false },
+            { completed: true },
+          ],
         },
       },
       {
@@ -93,6 +97,29 @@ export const deleteWorkoutById = async function (req, res) {
       isDeleted: true,
     });
     res.status(200).json(workout);
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+// GET ALL WORKOUTS
+export const getAllWorkouts = async function (req, res) {
+  try {
+    const pageSize = 5;
+    const skip = (req.body.page - 1) * pageSize;
+    const totalCount = await WORKOUT.countDocuments({
+      isDeleted: false,
+    });
+    return WORKOUT.find({ isDeleted: false })
+      .skip(skip)
+      .limit(pageSize)
+      .populate("createdBy", "name email")
+      .sort({
+        createdAt: -1,
+      })
+      .then((response) => {
+        return res.status(200).json({ response, totalCount });
+      });
   } catch (err) {
     console.log(err);
   }

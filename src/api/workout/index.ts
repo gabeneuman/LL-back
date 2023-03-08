@@ -9,4 +9,6 @@ router.get('/:id', controller.getWorkoutById);
 router.put('/:id', controller.updateWorkoutById);
 router.put('/delete/:id', controller.deleteWorkoutById);
 
+router.post('/explore', controller.getAllWorkouts);
+
 export = router;

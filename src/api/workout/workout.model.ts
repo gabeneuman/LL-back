@@ -50,7 +50,10 @@ const WorkoutSchema: Schema<WorkoutI> = new Schema({
   notes: String,
   completed: Boolean,
   isDeleted: Boolean,
-  createdBy: String,
+  createdBy: {
+    type: Schema.Types.ObjectId,
+    ref: "User"
+  },
   modifiedBy: String,
   createdAt: String,
   updatedAt: String,

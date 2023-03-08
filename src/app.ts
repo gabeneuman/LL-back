@@ -28,11 +28,11 @@ app.use((req, res, next) => {
 });
 
 const port = 3000;
-export const TOKEN_KEY = "pizza_app";
+export const TOKEN_KEY = "lifiting_ledger_api";
 
 routes(app);
 
-const url = `mongodb+srv://gabrielneuman:Red5owl0513@lifting-ledger.chlyuji.mongodb.net/?retryWrites=true&w=majority`;
+const url = `mongodb+srv://gabrielneuman:Red5owl0513@lifting-ledger.chlyuji.mongodb.net/?retryWrites=true&w=majority`; // place your mongoDB url here
 mongoose.set("strictQuery", false);
 mongoose
   .connect(url)
