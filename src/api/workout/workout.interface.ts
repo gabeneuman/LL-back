@@ -12,6 +12,7 @@ export interface WorkoutI extends Document {
   modifiedBy: string;
   createdAt: string;
   updatedAt: string;
+  isImported?: boolean;
 }
 
 

@@ -7,6 +7,8 @@ const userSchema: Schema<UserI> = new Schema({
   mobile: { type: String, required: false },
   imageUrl: { type: String, required: false },
   password: { type: String, required: true },
+}, {
+  timestamps: true,
 });
 
 export = model("User", userSchema);

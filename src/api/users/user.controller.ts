@@ -3,6 +3,8 @@ import USER from "./user.model";
 import jwt from "jsonwebtoken";
 import { TOKEN_KEY } from "../../app";
 import { getUserId } from "../workout/utility/utility";
+import WORKOUT from "../workout/workout.model";
+import mongoose from "mongoose";
 
 export const createUser = async function (req, res) {
   try {
@@ -53,11 +55,61 @@ export const login = function (req, res) {
 
 export const getUser = async function (req, res) {
   try {
-    const userId = getUserId(req);
-    const user = await USER.findById(userId, {
+    let workout = [];
+    let stat = {};
+
+    const date = new Date();
+    date.setDate(date.getDate() - 30);
+
+    const userId = new mongoose.Types.ObjectId(getUserId(req));
+    const workoutData = await WORKOUT.find({
+      $and: [{ createdBy: userId }, { isDeleted: false }],
+      createdAt: {
+        $gte: date.toISOString(),
+      }
+    });
+
+    if (workoutData.length) {
+      const completed = workoutData.filter((item) => item.completed).length;
+      const todo = workoutData.filter((item) => !item.completed).length;
+      workout = [workoutData];
+      stat = { completed, todo };
+    }
+    const user = await USER.find({ _id: userId }, {
       password: 0,
     });
-    res.status(200).json(user);
+    res.status(200).json({ user, workout, stat });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+export const getUserById = async function (req, res) {
+  try {
+    const userId = new mongoose.Types.ObjectId(req.params.id);
+    let workout = [];
+    let stat = {};
+
+    const date = new Date();
+    date.setDate(date.getDate() - 30);
+
+    const workoutData = await WORKOUT.find({
+      $and: [{ createdBy: userId }, { isDeleted: false }],
+      createdAt: {
+        $gte: date.toISOString(),
+      }
+    });
+
+    if (workoutData.length) {
+      const completed = workoutData.filter((item) => item.completed).length;
+      const todo = workoutData.filter((item) => !item.completed).length;
+      workout = [workoutData];
+      stat = { completed, todo };
+    }
+    const user = await USER.find({ _id: userId }, {
+      password: 0,
+    });
+    res.status(200).json({ user, workout, stat });
   } catch (err) {
     console.log(err);
   }
@@ -65,7 +117,7 @@ export const getUser = async function (req, res) {
 
 export const updateUser = async function (req, res) {
   try {
-    const userId = getUserId(req);
+    const userId = new mongoose.Types.ObjectId(getUserId(req));
     const userData = req.body;
     const user = await USER.findByIdAndUpdate(userId, userData);
     res.status(200).json(user);

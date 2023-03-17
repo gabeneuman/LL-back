@@ -1,10 +1,11 @@
 import WORKOUT from "./workout.model";
 import { getUserId } from "./utility/utility";
+import mongoose from "mongoose";
 
 export const createWorkout = async function (req, res) {
   try {
     const workout = req.body;
-    workout.createdBy = getUserId(req);
+    workout.createdBy = new mongoose.Types.ObjectId(getUserId(req));
     workout.isDeleted = false;
     workout.createdAt = new Date().toISOString();
     workout.updatedAt = new Date().toISOString();
@@ -17,22 +18,10 @@ export const createWorkout = async function (req, res) {
 
 export const getWorkouts = async function (req, res) {
   try {
-    const userId = getUserId(req);
-    const workouts = await WORKOUT.aggregate([
-      {
-        $match: {
-          $and: [{ createdBy: userId }, { isDeleted: false }],
-        },
-      },
-      {
-        $project: {
-          name: 1,
-          createdAt: 1,
-          exerciseGroupLength: { $size: "$exerciseGroup" },
-          completed: 1,
-        },
-      },
-    ]).sort({
+    const userId = new mongoose.Types.ObjectId(getUserId(req));
+    const workouts = await WORKOUT.find({
+      $and: [{ createdBy: userId }, { isDeleted: false }],
+    }).populate("createdBy", "name").sort({
       createdAt: -1,
     });
     res.status(200).json(workouts);
@@ -43,26 +32,10 @@ export const getWorkouts = async function (req, res) {
 
 export const getCompletedWorkouts = async function (req, res) {
   try {
-    const userId = getUserId(req);
-    const workouts = await WORKOUT.aggregate([
-      {
-        $match: {
-          $and: [
-            { createdBy: userId },
-            { isDeleted: false },
-            { completed: true },
-          ],
-        },
-      },
-      {
-        $project: {
-          name: 1,
-          updatedAt: 1,
-          exerciseGroupLength: { $size: "$exerciseGroup" },
-          completed: 1,
-        },
-      },
-    ]).sort({
+    const userId = new mongoose.Types.ObjectId(getUserId(req));
+    const workouts = await WORKOUT.find({
+      $and: [{ createdBy: userId }, { isDeleted: false }, { completed: true }],
+    }).populate("createdBy", "name").sort({
       createdAt: -1,
     });
     res.status(200).json(workouts);
@@ -73,7 +46,7 @@ export const getCompletedWorkouts = async function (req, res) {
 
 export const getWorkoutById = async function (req, res) {
   try {
-    const workout = await WORKOUT.findById(req.params.id);
+    const workout = await WORKOUT.findById(req.params.id).populate("createdBy", "name");
     res.status(200).json(workout);
   } catch (err) {
     console.log(err);
@@ -110,7 +83,14 @@ export const getAllWorkouts = async function (req, res) {
     const totalCount = await WORKOUT.countDocuments({
       isDeleted: false,
     });
-    return WORKOUT.find({ isDeleted: false })
+    const userId = new mongoose.Types.ObjectId(getUserId(req));
+    // get all workouts except current user's workouts
+
+    return WORKOUT.find({
+      isDeleted: false,
+      createdBy: { $ne: userId },
+      isImported: false,
+    })
       .skip(skip)
       .limit(pageSize)
       .populate("createdBy", "name email")
