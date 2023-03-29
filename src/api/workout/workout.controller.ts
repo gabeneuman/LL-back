@@ -104,3 +104,29 @@ export const getAllWorkouts = async function (req, res) {
     console.log(err);
   }
 };
+
+export async function getAllWorkoutsByName(req, res) {
+  try {
+    const name = req.query.search;
+    const pageSize = 5;
+    const skip = (req.query.page - 1) * pageSize;
+    const totalCount = await WORKOUT.countDocuments(
+      { name: { $regex: name, $options: 'i' }, isImported: false, isDeleted: false, }
+    ).skip(skip)
+      .limit(pageSize)
+      .populate("createdBy", "name email")
+      .sort({
+        createdAt: -1,
+      });
+    const response = await WORKOUT.find({ name: { $regex: name, $options: 'i' }, isImported: false, isDeleted: false, }).skip(skip)
+      .limit(pageSize)
+      .populate("createdBy", "name email")
+      .sort({
+        createdAt: -1,
+      });
+    return res.status(200).json({ response, totalCount });
+  } catch (err) {
+    console.error(err);
+    throw new Error('Error occurred while fetching documents by name.');
+  }
+}

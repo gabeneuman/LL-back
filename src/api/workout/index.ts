@@ -10,5 +10,6 @@ router.put('/:id', controller.updateWorkoutById);
 router.put('/delete/:id', controller.deleteWorkoutById);
 
 router.post('/explore', controller.getAllWorkouts);
+router.get('/explore/search', controller.getAllWorkoutsByName);
 
 export = router;
