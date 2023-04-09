@@ -1,4 +1,5 @@
 import WORKOUT from "./workout.model";
+import REDO_WORKOUT from "../redo-workouts/redo_workouts.model";
 import { getUserId } from "./utility/utility";
 import mongoose from "mongoose";
 
@@ -48,6 +49,20 @@ export const getWorkoutById = async function (req, res) {
   try {
     const workout = await WORKOUT.findById(req.params.id).populate("createdBy", "name");
     res.status(200).json(workout);
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+export const getCompletedWorkoutById = async function (req, res) {
+  try {
+    const workout = await WORKOUT.findById(req.params.id).populate("createdBy", "name");
+    if (!workout.completed) {
+      res.status(200).json(workout);
+    } else {
+      const workout = await REDO_WORKOUT.find({ "workout._id": req.params.id });
+      res.status(200).json(workout);
+    }
   } catch (err) {
     console.log(err);
   }
